@@ -39,6 +39,8 @@ try:
         i2c.writeto(101, "R")
         result = bytearray(3)
         i2c.readfrom_into(101, result)
+        result_int = int.from_bytes(result, "big")
+        print(result_int)
         time.sleep(1)
 
 finally:
