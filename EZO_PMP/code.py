@@ -28,6 +28,7 @@ print("Connected to %s!" % secrets["ssid"])
 socket = socketpool.SocketPool(wifi.radio)
 https = requests.Session(socket, ssl.create_default_context())
 ntp = adafruit_ntp.NTP(socket, tz_offset=0)
+rtc.RTC().datetime = ntp.datetime
 
 # Show available memory
 print("Memory Info - gc.mem_free()")
@@ -53,50 +54,53 @@ i2c.scan()
 
 # Write to and read from EZO-PMP devices
 try:
-    i2c.writeto(101, "D,20")
-    i2c.writeto(102, "D,10")
-    result1 = bytearray(10)
-    result2 = bytearray(10)
-    time.sleep(0.3)
-    i2c.readfrom_into(101, result1)
-    i2c.readfrom_into(102, result2)
-    time.sleep(0.3)
-    print(result1)
-    print(result2)
-    i2c.writeto(101, "D,?")
-    i2c.writeto(102, "D,?")
-    time.sleep(0.3)
-    i2c.readfrom_into(101, result1)
-    i2c.readfrom_into(102, result2)
-    time.sleep(0.3)
-    print(result1)
-    print(result2)
+    x = 0
+    while(x < 15):
+        i2c.writeto(101, "D,1")
+        i2c.writeto(102, "D,2")
+        result1 = bytearray(10)
+        result2 = bytearray(10)
+        time.sleep(0.3)
+        i2c.readfrom_into(101, result1)
+        i2c.readfrom_into(102, result2)
+        time.sleep(0.3)
+        print(result1)
+        print(result2)
+        i2c.writeto(101, "D,?")
+        i2c.writeto(102, "D,?")
+        time.sleep(0.3)
+        i2c.readfrom_into(101, result1)
+        i2c.readfrom_into(102, result2)
+        time.sleep(0.3)
+        print(result1)
+        print(result2)
 
-    output1 = result1[4:8]
-    output2 = result2[4:8]
-    result_decode1 = output1.decode("utf-8") # decode output to make it a float
-    result_decode2 = output2.decode("utf-8")
-    result_f1 = float(result_decode1)
-    result_f2 = float(result_decode2)
-    print(result_f1)
-    print(result_f2)
-    rtc.RTC().datetime = ntp.datetime
-    data1 = '\n pumps,sensor_id=EZOPMP3101 dispensed=%f %i' % (result_f1, time.mktime(time.localtime()))
-    data2 = '\n pumps,sensor_id=EZOPMP3102 dispensed=%f %i' % (result_f2, time.mktime(time.localtime())) 
-    print(data1)
-    print(data2)
+        output1 = result1[4:8]
+        output2 = result2[4:8]
+        result_decode1 = output1.decode("utf-8") # decode output to make it a float
+        result_decode2 = output2.decode("utf-8")
+        result_f1 = float(result_decode1)
+        result_f2 = float(result_decode2)
+        print(result_f1)
+        print(result_f2)
+        data1 = '\n pumps,sensor_id=EZOPMP3101 dispensed=%f %i' % (result_f1, time.mktime(time.localtime()))
+        data2 = '\n pumps,sensor_id=EZOPMP3102 dispensed=%f %i' % (result_f2, time.mktime(time.localtime())) 
+        print(data1)
+        print(data2)
 
-    url = "http://159.203.186.79:8086/api/v2/write?org=uf_cea&bucket=chamber3_devel&precision=s"
+        url = "http://159.203.186.79:8086/api/v2/write?org=uf_cea&bucket=chamber3_devel&precision=s"
 
-    response = None
-    while not response:
-        try:
-            response = https.post(url, headers=headers, data=data1)
-            response2 = https.post(url, headers=headers, data=data2)
-        except AssertionError as error:
-            print('Request failed')
+        response = None
+        while not response:
+            try:
+                response = https.post(url, headers=headers, data=data1)
+                response2 = https.post(url, headers=headers, data=data2)
+            except AssertionError as error:
+                print('Request failed')
 
-    
+        x += 1
+        time.sleep(30)
+        
 
 finally:
     i2c.unlock()
