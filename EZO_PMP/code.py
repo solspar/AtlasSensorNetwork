@@ -27,8 +27,13 @@ print("Connected to %s!" % secrets["ssid"])
 
 socket = socketpool.SocketPool(wifi.radio)
 https = requests.Session(socket, ssl.create_default_context())
-ntp = adafruit_ntp.NTP(socket, tz_offset=0)
-rtc.RTC().datetime = ntp.datetime
+try:
+    ntp = adafruit_ntp.NTP(socket, server="time-e-g.nist.gov", tz_offset=0)
+    rtc.RTC().datetime = ntp.datetime
+except TimeoutError:
+    print("Error: Could not connect to ntp")
+    raise
+
 
 # Show available memory
 print("Memory Info - gc.mem_free()")
