@@ -20,6 +20,10 @@ except ImportError:
 
 try:
     print("Connecting to %s" % secrets["ssid"])
+    # wifi.radio.hostname = "epistemology" # green
+    # wifi.radio.hostname = "agency" # orange
+    # wifi.radio.hostname = "coordination" # blue
+    # wifi.radio.hostname = "curiosity" # yellow
     wifi.radio.connect(secrets["ssid"], secrets["password"])
 except:
     print("Error connecting to wifi")
