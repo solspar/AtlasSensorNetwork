@@ -20,10 +20,10 @@ except ImportError:
 
 try:
     print("Connecting to %s" % secrets["ssid"])
-    # wifi.radio.hostname = "epistemology" # green
-    # wifi.radio.hostname = "agency" # orange
-    # wifi.radio.hostname = "coordination" # blue
-    # wifi.radio.hostname = "curiosity" # yellow
+    wifi.radio.hostname = "epistemology"  # green
+    # wifi.radio.hostname = "agency"  # orange
+    # wifi.radio.hostname = "coordination"  # blue
+    # wifi.radio.hostname = "curiosity"  # yellow
     wifi.radio.connect(secrets["ssid"], secrets["password"])
 except:
     print("Error connecting to wifi")
@@ -63,7 +63,14 @@ url = "http://159.203.186.79:8086/api/v2/write?org=uf_cea&bucket=chamber3_devel&
 
 POLLING_PERIOD = 15  # Polling period in seconds
 
+while not i2c.try_lock():  # attempting to lock i2c to have exclusive control
+    pass
+
 try:
+    controller_id = "310B9"  # green
+    # controller_id = "310BA"  # orange
+    # controller_id = "310BB"  # blue
+    # controller_id = "310BC"  # yellow
     orp_sensor = generic_ezo(ORP_ADDRESS)
     ph_sensor = generic_ezo(PH_ADDRESS)
     do_sensor = generic_ezo(DO_ADDRESS)
@@ -82,7 +89,8 @@ try:
         res_ec = ec_sensor.read()
         print("EC: ", res_ec)
 
-        data = "\n atlasSensors,sensor_id=310B9 orp=%f,ph=%f,do=%f,ec=%f %i" % (
+        data = "\n atlasSensors,sensor_id=%s orp=%f,ph=%f,do=%f,ec=%f %i" % (
+            controller_id,
             res_orp,
             res_ph,
             res_do,
