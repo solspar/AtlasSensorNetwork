@@ -18,16 +18,24 @@ except ImportError:
     print("WiFi secrets are kept in secrets.py, please add them there!")
     raise
 
-try:
-    print("Connecting to %s" % secrets["ssid"])
-    # wifi.radio.hostname = "epistemology" # green
-    wifi.radio.hostname = "agency" # orange
-    # wifi.radio.hostname = "coordination" # blue
-    # wifi.radio.hostname = "curiosity" # yellow
-    wifi.radio.connect(secrets["ssid"], secrets["password"])
-except:
-    print("Error connecting to wifi")
-    raise
+print("Connecting to %s" % secrets["ssid"])
+# wifi.radio.hostname = "epistemology" # green
+wifi.radio.hostname = "agency" # orange
+# wifi.radio.hostname = "coordination" # blue
+# wifi.radio.hostname = "curiosity" # yellow
+print("Hostname:", wifi.radio.hostname)
+connection_attempts = 0
+
+while not wifi.radio.ipv4_address:
+    try:
+        connection_attempts += 1
+        wifi.radio.connect(secrets["ssid"], secrets["password"])
+    except Exception as e:
+        print("Error connecting to wifi:", e)
+        if connection_attempts == 10:
+            raise
+        print("Trying again in 10 seconds...")
+        time.sleep(10)
 
 print("Connected to %s!" % secrets["ssid"])
 
@@ -91,13 +99,30 @@ try:
         while not response:
             try:
                 response = https.post(url, headers=headers, data=data)
+            except RuntimeError as error:
+                print("Error:", error)
+                if not wifi.radio.ipv4_address:
+                    connection_attempts = 0
+                    while wifi.radio.ipv4_address is None:
+                        try:
+                            connection_attempts += 1
+                            wifi.radio.connect(secrets["ssid"], secrets["password"])
+                        except Exception as e:
+                            print("Error connecting to wifi:", e)
+                            if connection_attempts == 10:
+                                raise
+                            print("Trying again in 10 seconds...")
+                            time.sleep(10)
+                    print("Connected to %s!" % secrets["ssid"])
             except AssertionError as error:
                 print("Request failed")
+                raise
 
         # time.sleep(15)
         now = time.time()
         waitTime = POLLING_PERIOD - (now - startTime)
-        time.sleep(waitTime)
+        if waitTime > 0:
+            time.sleep(waitTime)
 
 finally:
     # i2c.unlock()
