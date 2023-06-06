@@ -18,16 +18,28 @@ except ImportError:
     print("WiFi secrets are kept in secrets.py, please add them there!")
     raise
 
-try:
-    print("Connecting to %s" % secrets["ssid"])
-    wifi.radio.hostname = "epistemology"  # green
-    # wifi.radio.hostname = "agency"  # orange
-    # wifi.radio.hostname = "coordination"  # blue
-    # wifi.radio.hostname = "curiosity"  # yellow
-    wifi.radio.connect(secrets["ssid"], secrets["password"])
-except:
-    print("Error connecting to wifi")
-    raise
+print("Connecting to %s" % secrets["ssid"])
+wifi.radio.hostname = "epistemology"  # green
+# wifi.radio.hostname = "agency"  # orange
+# wifi.radio.hostname = "coordination"  # blue
+# wifi.radio.hostname = "curiosity"  # yellow
+print("Hostname:", wifi.radio.hostname)
+
+MAX_CONNECTION_ATTEMPTS = 10
+CONNECTION_INTERVAL = 10  # connection retry interval in seconds
+
+connection_attempts = 0
+
+while not wifi.radio.ipv4_address:
+    try:
+        connection_attempts += 1
+        wifi.radio.connect(secrets["ssid"], secrets["password"])
+    except Exception as e:
+        print("Error connecting to wifi:", e)
+        if connection_attempts == MAX_CONNECTION_ATTEMPTS:
+            raise
+        print("Trying again in %i seconds..." % CONNECTION_INTERVAL)
+        time.sleep(CONNECTION_INTERVAL)
 
 print("Connected to %s!" % secrets["ssid"])
 
@@ -102,14 +114,31 @@ try:
         while not response:
             try:
                 response = https.post(url, headers=headers, data=data)
-
+            except RuntimeError as error:  # disconnect errors often show as RuntimeError
+                print("Error:", error)
+                if not wifi.radio.ipv4_address:
+                    connection_attempts = 0
+                    while not wifi.radio.ipv4_address:  # check if wifi is actually disconnected before attempting
+                        # reconnect
+                        try:
+                            connection_attempts += 1
+                            wifi.radio.connect(secrets["ssid"], secrets["password"])
+                        except Exception as e:
+                            print("Error connecting to wifi:", e)
+                            if connection_attempts == MAX_CONNECTION_ATTEMPTS:
+                                raise
+                            print("Trying again in %i seconds..." % CONNECTION_INTERVAL)
+                            time.sleep(CONNECTION_INTERVAL)
+                        print("Connected to %s!" % secrets["ssid"])
             except AssertionError as error:
-                print("Request failed")
+                print("Request failed:", error)
+                raise
 
         # time.sleep(15)
         now = time.time()
         waitTime = POLLING_PERIOD - (now - startTime)
-        time.sleep(waitTime)
+        if waitTime > 0:  # waitTime will be negative if connection is lost
+            time.sleep(waitTime)
 
 finally:
     i2c.unlock()
