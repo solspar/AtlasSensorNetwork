@@ -8,7 +8,7 @@ import rtc
 import adafruit_ntp
 import adafruit_requests as requests
 from params import headers, params
-
+# some edits here
 from AtlasSensors import *
 
 # Get wifi details and more from a secrets.py file
