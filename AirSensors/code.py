@@ -79,9 +79,21 @@ def main_loop():
             time.sleep(0.1)  # delay for a short period before checking again
 
         # Data collection
-        res_co2 = scd.CO2
-        res_temp = scd.temperature
-        res_humidity = scd.relative_humidity
+        try:
+            res_co2 = scd.CO2
+        except Exception as e:
+            res_co2 = -1
+            print("Error Occurred reading CO2: ",e)
+        try:    
+            res_temp = scd.temperature
+        except Exception as e:
+            res_temp = -1
+            print("Error Occurred reading Temp: ", e)
+        try:
+            res_humidity = scd.relative_humidity
+        except Exception as e:
+            res_humidity = -1
+            print("Error Occurred reading humidity: ",e)
 
         print("CO2 reading: ", res_co2, "PPM")
         print("Temperature: ", res_temp, "degrees C")
