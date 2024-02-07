@@ -1,0 +1,6 @@
+Bee S3 by Smart Bee Designs
+Test Date:2022-11-04 
+GPIO Pins: PASSED
+WiFi Connected: PASSED
+VBAT Monitoring: PASSED
+RGB LED: PASSED

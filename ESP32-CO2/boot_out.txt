@@ -1,0 +1,4 @@
+Adafruit CircuitPython 8.2.6 on 2023-09-12; Bee-S3 with ESP32S3
+Board ID:smartbeedesigns_bee_s3
+UID:CD45570C858F
+boot.py output:
