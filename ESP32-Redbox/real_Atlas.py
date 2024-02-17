@@ -3,7 +3,8 @@ import busio
 import time
 
 global i2c
-i2c = busio.I2C(scl=board.SCL, sda=board.SDA, frequency=400000)
+#i2c = busio.I2C(scl=board.SCL, sda=board.SDA, frequency=400000)
+i2c = busio.I2C(scl=board.IO42, sda=board.IO41, frequency=400000)
 
 # while not i2c.try_lock():
 #     pass
