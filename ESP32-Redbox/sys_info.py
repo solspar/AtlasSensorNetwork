@@ -1,7 +1,7 @@
 sys_info = {
-    "color":"yellow",
-    "controller_id":"310BC",
-    "hostname":"curiosity"
+    "color":"bravo",
+    "controller_id":"bravo",
+    "hostname":"bravo"
 }
 
 """
