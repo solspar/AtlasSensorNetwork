@@ -59,12 +59,15 @@ def connect_to_wifi():
         https
     except:
         https = requests.Session(pool,ssl_context)
-            
-    try:
-        ntp = adafruit_ntp.NTP(pool, server="time-e-g.nist.gov", tz_offset=0)
-        rtc.RTC().datetime = ntp.datetime
-    except TimeoutError:
-        print("Error: Could not connect to ntp.")
+
+    while True:        
+        try:
+            ntp = adafruit_ntp.NTP(pool, server="time-e-g.nist.gov", tz_offset=0)
+            rtc.RTC().datetime = ntp.datetime
+            break
+        except Exception as e:
+            print("Error: Could not connect to ntp. Trying again...", str(e))
+            time.sleep(2)
 
     return radio.ipv4_address is not None
 
