@@ -41,7 +41,7 @@ except ImportError:
     raise
 
 def connect_to_wifi():
-    global https
+    global https, pool
     print("Connecting to %s" % secrets["ssid"])
     
     radio = wifi.radio
@@ -60,16 +60,19 @@ def connect_to_wifi():
     except:
         https = requests.Session(pool,ssl_context)
 
-    while True:        
-        try:
-            ntp = adafruit_ntp.NTP(pool, server="time-e-g.nist.gov", tz_offset=0)
-            rtc.RTC().datetime = ntp.datetime
-            break
-        except Exception as e:
-            print("Error: Could not connect to ntp. Trying again...", str(e))
-            time.sleep(2)
-
     return radio.ipv4_address is not None
+
+def ntp_sync():
+    global last_sync_time
+    try:
+        #ntp = adafruit_ntp.NTP(pool, server="time-e-g.nist.gov", tz_offset=0)
+        ntp = adafruit_ntp.NTP(pool, server="ns1.name.ufl.edu", tz_offset=0)
+        rtc.RTC().datetime = ntp.datetime
+        last_sync_time = time.time()
+    except Exception as e:
+        print("Error: Could not connect to ntp.", str(e))
+        time.sleep(2)
+    return None
 
 def send_data(data):
     try:
@@ -80,7 +83,19 @@ def send_data(data):
     except (RuntimeError, AssertionError) as error:
         print("Data sending failed:", error)
 
+last_sync_time = 0
 def main_loop():
+
+    # Connect to wifi
+    try:
+        connect_to_wifi()
+    except:
+        print("Could not connect to Wi-fi. Trying again next loop.")
+    
+    # NTP sync
+    if connect_to_wifi() and time.time()-last_sync_time >= 3600:
+        ntp_sync()
+
     while True:
         if not i2c.try_lock():  # attempting to lock i2c to have exclusive control
             # Initialize sensors
