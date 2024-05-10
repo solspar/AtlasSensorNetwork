@@ -11,6 +11,7 @@ def main():
     ORP_ADDRESS = 98
     PH_ADDRESS = 99
     EC_ADDRESS = 100
+    TEMP_ADDRESS = 102
     while not i2c.try_lock():  # attempting to lock i2c to have exclusive control
         pass
 
@@ -23,6 +24,8 @@ def main():
         ph_sensor = generic_ezo(PH_ADDRESS)
         do_sensor = generic_ezo(DO_ADDRESS)
         ec_sensor = generic_ezo(EC_ADDRESS)
+        temp_sensor = generic_ezo(TEMP_ADDRESS)
+
         while True:
             startTime = time.time()
             res_orp = orp_sensor.read()
@@ -31,8 +34,8 @@ def main():
             res_ph = ph_sensor.read()
             print("pH:", res_ph)
 
-            #res_do = do_sensor.read()
-            #print("Dissolved Oxygen: ", res_do, "mg/L")
+            res_do = do_sensor.read()
+            print("Dissolved Oxygen: ", res_do, "mg/L")
 
             res_ec = ec_sensor.read()
             print("EC: ", res_ec)

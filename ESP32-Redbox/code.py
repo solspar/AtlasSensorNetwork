@@ -101,6 +101,7 @@ def main_loop():
             ph_sensor = generic_ezo(PH_ADDRESS)
             do_sensor = generic_ezo(DO_ADDRESS)
             ec_sensor = generic_ezo(EC_ADDRESS)
+            temp_sensor = generic_ezo(TEMP_ADDRESS)
 
             ec_flag = False
             orp_flag = False
@@ -140,14 +141,23 @@ def main_loop():
                 res_ec = -1
                 ec_flag = True
 
+            try:
+                res_temp = temp_sensor.read()
+                print("Solution temperature: ", res_temp, "˚C")
+            except Exception as e:
+                print("\n Error occurred: ", str(e))
+                res_temp = -1
+                temp_flag = True
+
             # You might want to store the timestamp of the data collection
             timestamp = time.mktime(time.localtime())
-            data = "\n atlasSensors,sensor_id=%s orp=%f,ph=%f,do=%f,ec=%f %i" % (
+            data = "\n atlasSensors,sensor_id=%s orp=%f,ph=%f,do=%f,ec=%f,temp=%f %i" % (
                 sys_info["controller_id"],
                 res_orp,
                 res_ph,
                 res_do,
                 res_ec,
+                res_temp,
                 timestamp,
             )
             print(data)
@@ -157,7 +167,7 @@ def main_loop():
 
             # Save data offline in case of connection issues
             try:
-                offline_data = "\n %i, %f, %f, %f, %f" % (timestamp, res_orp, res_ph, res_do, res_ec)
+                offline_data = "\n %i, %f, %f, %f, %f, %f" % (timestamp, res_orp, res_ph, res_do, res_ec, res_temp)
                 with open('/offline_collection.csv', 'a') as file:
                     file.write(offline_data)
                 print("Saved data offline successfully.")
