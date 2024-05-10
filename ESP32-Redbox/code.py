@@ -85,18 +85,16 @@ def send_data(data):
 
 last_sync_time = 0
 def main_loop():
-
-    # Connect to wifi
-    try:
-        connect_to_wifi()
-    except:
-        print("Could not connect to Wi-fi. Trying again next loop.")
-    
-    # NTP sync
-    if connect_to_wifi() and time.time()-last_sync_time >= 3600:
-        ntp_sync()
-
     while True:
+            # Connect to wifi
+        try:
+            connect_to_wifi()
+        except:
+            print("Could not connect to Wi-fi. Trying again next loop.")
+        
+        # NTP sync
+        if connect_to_wifi() and time.time()-last_sync_time >= 3600:
+            ntp_sync()
         if not i2c.try_lock():  # attempting to lock i2c to have exclusive control
             # Initialize sensors
             orp_sensor = generic_ezo(ORP_ADDRESS)
